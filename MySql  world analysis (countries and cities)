@@ -1,0 +1,63 @@
+-- top 10 cities with the largest population
+select * 
+from city 
+order by Population DESC
+limit 10;
+
+-- the largest country on every continent
+SELECT c1.Name, c1.Continent, c1.SurfaceArea 
+FROM country c1
+INNER JOIN (
+   SELECT Continent, MAX(SurfaceArea) AS MaxSurfaceArea 
+   FROM country 
+   GROUP BY Continent
+) c2 ON c1.Continent = c2.Continent AND c1.SurfaceArea = c2.MaxSurfaceArea;
+
+-- the most populous country on every continent
+SELECT c1.Continent,  c1.Name, c1.Population 
+FROM country c1
+INNER JOIN (
+   SELECT Continent, MAX(Population) AS MaxPopulation
+   FROM country 
+   GROUP BY Continent
+) c2 ON c1.Continent = c2.Continent AND c1.Population = c2.MaxPopulation
+WHERE Population > 0; 
+
+-- how many people speak this language 
+select c.Name, TRIM((c.Population*cl.Percentage)/100)+0 as Speakers, 
+cl.Language, cl.IsOfficial
+from country as c
+inner join countrylanguage as cl on c.Code = cl.CountryCode
+
+-- the most popular language in the world
+SELECT sum(l.Speakers) AS Speakers, Language 
+FROM (
+select c.Name, TRIM((c.Population*cl.Percentage)/100)+0 as Speakers, 
+cl.Language, cl.IsOfficial
+from country as c
+inner join countrylanguage as cl on c.Code = cl.CountryCode
+) as l
+group by l.language
+order by Speakers DESC
+
+-- How many cities have more than one million inhabitants?
+select count(c.Name) AS Cities_over_1000000, ct.Name
+from city as c
+inner join country as ct on c.CountryCode = ct.Code
+where c.Population > 1000000
+group by ct.Name 
+order by Cities_over_1000000 DESC
+
+-- in which cities in europe statistically the most people speak their mother tongue (top 5)
+WITH cte as(
+select c.CountryCode,c.Name, ROUND(TRIM((c.Population * cl.Percentage)/100)+0,2) as NativeSpeakers 
+from city as c
+inner join countrylanguage as cl on c.CountryCode = cl.CountryCode
+where cl.IsOfficial = True
+)
+select ct.Name, cte.Name, cte.NativeSpeakers
+from country as ct
+join cte on ct.Code = cte.CountryCode
+where ct.Continent = "Europe"
+order by cte.NativeSpeakers DESC
+limit 5
