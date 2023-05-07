@@ -1,0 +1,12 @@
+{
+  "manifest_version": 2,
+  "name": "Liczba tagów",
+  "version": "1.0",
+  "description": "Rozszerzenie wyświetlające liczbę tagów na stronie",
+  "permissions": [
+    "activeTab"
+  ],
+  "browser_action": {
+    "default_popup": "popup.html"
+  }
+}
